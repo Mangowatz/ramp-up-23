@@ -1,0 +1,37 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: ["redis-server", "/redis.conf"]
+    networks:
+      - app-tier
+  
+  publish:
+    image: publisher
+    ports:
+      - 8081:80
+    depends_on:
+      - redis
+    networks:
+      - app-tier
+    environment:
+      - PYTHONUNBUFFERED=1
+  
+  subscribe:
+    image: subscriber
+    ports:
+      - 8080:80
+    depends_on:
+      - redis
+    networks:
+      - app-tier
+    environment:
+      - PYTHONUNBUFFERED=1
+
+networks:
+  app-tier:
+    driver: bridge
